@@ -1,0 +1,37 @@
+{
+  "name": "square-run",
+  "version": "1.0.0",
+  "description": "A 2D scroller game about the square-shaped character who can run and jump collecting different items",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8080 -c-1",
+    "dev": "npx http-server -p 8080 -c-1 --cors",
+    "build": "echo 'No build process needed for this HTML5 game'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "game",
+    "html5",
+    "canvas",
+    "javascript",
+    "platformer",
+    "2d"
+  ],
+  "author": "anurbis-dev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anurbis-dev/SquareRun.git"
+  },
+  "bugs": {
+    "url": "https://github.com/anurbis-dev/SquareRun/issues"
+  },
+  "homepage": "https://github.com/anurbis-dev/SquareRun#readme",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

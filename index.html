@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Geometric Jumper v23 (iOS Final Fix)</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="assets/styles/main.css">
+    
+    <!-- Game Modules -->
+    <script type="module" src="src/core/game.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Overlays -->
+        <div id="fade-overlay" class="overlay"></div>
+        <div id="pause-overlay" class="overlay"></div>
+        <div id="start-prompt" class="hidden">Click to start</div>
+        
+        <!-- UI Elements -->
+        <div id="ui-container">
+            <div>
+                <span id="score">Score: 0</span><br>
+                <span id="level">Level: 1</span><br>
+                <span id="deaths">Attempts: 0</span>
+            </div>
+        </div>
+        
+        <div id="menu-icon">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+
+        <div id="instructions">
+            Click/Tap - jump. 2 fingers - fullscreen. RMB/Menu icon - pause.
+        </div>
+        
+        <!-- Menu Overlays -->
+        <div id="audio-start-overlay" class="menu-overlay" role="button" tabindex="0" ontouchstart="">
+            <div class="menu-box">
+                <h1>Geometric Jumper</h1>
+                <p style="font-size: 1.5em; cursor: pointer;">Click to start</p>
+            </div>
+        </div>
+
+        <div id="main-menu" class="menu-overlay hidden">
+            <div class="menu-box">
+                <h1>Geometric Jumper</h1>
+                <button id="play-button">Play</button>
+                <button id="exit-button" class="exit-button">Exit</button>
+            </div>
+        </div>
+
+        <div id="pause-menu" class="menu-overlay hidden">
+            <div class="menu-box">
+                <h1>Pause</h1>
+                <button id="resume-button">Resume</button>
+                <button id="restart-level-button">Start Over</button>
+                <button id="exit-to-main-menu-pause-button" class="exit-button">Exit to Main Menu</button>
+            </div>
+        </div>
+
+        <div id="level-start-banner" class="menu-overlay hidden" style="background-color: rgba(0,0,0,0.5);">
+             <div class="menu-box">
+                <h1 id="level-banner-title">Level 1</h1>
+                <p id="level-banner-pixels">Collect pixels: 0</p>
+            </div>
+        </div>
+        
+        <div id="level-end-menu" class="menu-overlay hidden">
+            <div class="menu-box">
+                <h1 id="level-end-title">Level Complete!</h1>
+                <div class="stats-grid">
+                    <span>Time:</span><span id="level-time-stat">0.0s</span>
+                    <span>Pixels Collected:</span><span id="level-pixels-stat">0 / 0</span>
+                    <span>Deaths:</span><span id="level-deaths-stat">0</span>
+                    <span>Bonus:</span><span id="level-bonus-stat">0</span>
+                </div>
+                <button id="continue-button">Continue</button>
+                <button id="replay-level-button">Replay Level</button>
+                <button id="exit-to-main-menu-end-button" class="exit-button">Exit to Main Menu</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
