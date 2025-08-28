@@ -13,6 +13,7 @@ import { InputManager } from '../utils/input-manager.js';
 import { GameState } from '../core/game-state.js';
 import { Player } from '../core/player.js';
 import { Camera } from '../core/camera.js';
+import { CollectibleManager } from '../core/collectibles.js';
 
 /**
  * Main Game Class
@@ -32,6 +33,7 @@ class Game {
         this.uiManager = new UIManager();
         this.levelManager = new LevelManager();
         this.inputManager = new InputManager();
+        this.collectibleManager = new CollectibleManager();
         
         // Game loop variables
         this.lastTime = 0;
@@ -58,6 +60,7 @@ class Game {
             this.uiManager.init();
             this.levelManager.init();
             this.inputManager.init();
+            this.collectibleManager.init();
             
             // Set up event listeners
             this.setupEventListeners();
@@ -131,7 +134,11 @@ class Game {
         this.physicsEngine.update(dt);
         this.camera.update(dt);
         this.levelManager.update(dt);
+        this.collectibleManager.update(dt);
         this.audioManager.update(dt);
+        
+        // Check collectible collisions
+        this.collectibleManager.checkPlayerCollision(this.player);
         
         // Check for level completion
         if (this.levelManager.isLevelComplete()) {
@@ -148,7 +155,7 @@ class Game {
      * Render the game
      */
     render() {
-        this.renderer.render(this.camera, this.player, this.levelManager);
+        this.renderer.render(this.camera, this.player, this.levelManager, this.collectibleManager);
     }
     
     /**

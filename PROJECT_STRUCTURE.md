@@ -36,21 +36,26 @@ SquareRun/
 **Files**:
 - `game.js` - Main game controller and loop
 - `game-state.js` - Game state management and statistics
-- `player.js` - Player character physics and behavior
+- `player.js` - Player character physics and behavior (with form system)
 - `camera.js` - Camera system and viewport management
+- `collectibles.js` - Collectible objects and effects management
 
 **Responsibilities**:
 - Game initialization and lifecycle
 - State transitions (menu → playing → pause → etc.)
 - Player physics and movement
+- Player form system and transformations
 - Camera following and parallax
 - Statistics tracking (score, deaths, time)
+- Collectible management and effects
 
 **Key Features**:
 - Modular game loop with delta time
 - Smooth camera following
 - Player collision detection
 - State machine for game flow
+- Dynamic form system with special abilities
+- Collectible system with various effects
 
 ### 🎵 Audio Module (`src/audio/`)
 
@@ -195,6 +200,7 @@ Game Controller (core/game.js)
 ├── Game State (core/game-state.js)
 ├── Player (core/player.js)
 ├── Camera (core/camera.js)
+├── Collectible Manager (core/collectibles.js)
 ├── Audio Manager (audio/audio-manager.js)
 ├── Physics Engine (physics/physics-engine.js)
 ├── Renderer (rendering/renderer.js)

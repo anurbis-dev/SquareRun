@@ -1,6 +1,7 @@
 /**
  * Player Module
  * Manages player character physics, movement, and state
+ * Supports multiple forms and visual appearances
  */
 
 export class Player {
@@ -36,6 +37,142 @@ export class Player {
         this.respawnY = 100;
         this.consecutiveDeaths = 0;
         this.lastDeathPlatformId = -1;
+        
+        // Form and appearance system
+        this.currentForm = 'square';
+        this.forms = {
+            square: {
+                name: 'Square',
+                width: 40,
+                height: 40,
+                color: '#3498db',
+                jumpForce: -700,
+                maxSpeed: 300,
+                rotationSpeed: 6,
+                specialAbility: null
+            },
+            circle: {
+                name: 'Circle',
+                width: 35,
+                height: 35,
+                color: '#e74c3c',
+                jumpForce: -600,
+                maxSpeed: 350,
+                rotationSpeed: 8,
+                specialAbility: 'bounce'
+            },
+            triangle: {
+                name: 'Triangle',
+                width: 45,
+                height: 40,
+                color: '#f39c12',
+                jumpForce: -800,
+                maxSpeed: 280,
+                rotationSpeed: 4,
+                specialAbility: 'glide'
+            },
+            star: {
+                name: 'Star',
+                width: 38,
+                height: 38,
+                color: '#9b59b6',
+                jumpForce: -750,
+                maxSpeed: 320,
+                rotationSpeed: 10,
+                specialAbility: 'doubleJump'
+            }
+        };
+        
+        // Power-ups and effects
+        this.activeEffects = [];
+        this.powerUpTimer = 0;
+        this.originalForm = 'square';
+        
+        // Animation properties
+        this.animationFrame = 0;
+        this.animationSpeed = 0.2;
+        this.pulseEffect = 0;
+    }
+    
+    /**
+     * Change player form
+     */
+    changeForm(formName) {
+        if (!this.forms[formName]) {
+            console.warn(`Form ${formName} not found`);
+            return false;
+        }
+        
+        const newForm = this.forms[formName];
+        this.currentForm = formName;
+        
+        // Update physical properties
+        this.width = newForm.width;
+        this.height = newForm.height;
+        this.jumpForce = newForm.jumpForce;
+        this.maxSpeed = newForm.maxSpeed;
+        this.rotationSpeed = newForm.rotationSpeed;
+        
+        // Update current speed
+        this.dx = this.maxSpeed;
+        
+        // Reset animation
+        this.animationFrame = 0;
+        this.pulseEffect = 0;
+        
+        return true;
+    }
+    
+    /**
+     * Add temporary power-up effect
+     */
+    addPowerUp(effect) {
+        this.activeEffects.push({
+            ...effect,
+            startTime: performance.now()
+        });
+        
+        // Apply immediate effects
+        if (effect.speedBoost) {
+            this.maxSpeed *= effect.speedBoost;
+            this.dx = this.maxSpeed;
+        }
+        
+        if (effect.jumpBoost) {
+            this.jumpForce *= effect.jumpBoost;
+        }
+        
+        if (effect.form) {
+            this.originalForm = this.currentForm;
+            this.changeForm(effect.form);
+        }
+    }
+    
+    /**
+     * Remove expired power-ups
+     */
+    updatePowerUps(dt) {
+        const currentTime = performance.now();
+        this.activeEffects = this.activeEffects.filter(effect => {
+            if (currentTime - effect.startTime > effect.duration) {
+                // Remove effect
+                if (effect.speedBoost) {
+                    this.maxSpeed /= effect.speedBoost;
+                    this.dx = this.maxSpeed;
+                }
+                
+                if (effect.jumpBoost) {
+                    this.jumpForce /= effect.jumpBoost;
+                }
+                
+                if (effect.form) {
+                    this.changeForm(this.originalForm);
+                }
+                
+                return false;
+            }
+            return true;
+        });
     }
     
     /**
@@ -46,6 +183,9 @@ export class Player {
             this.updateParticles(dt);
             return;
         }
+        
+        // Update power-ups
+        this.updatePowerUps(dt);
         
         // Apply gravity
         this.dy += this.gravity * dt;
@@ -66,6 +206,12 @@ export class Player {
             this.flashTime -= dt * 60;
         }
         
+        // Update animation
+        this.animationFrame += dt * this.animationSpeed;
+        if (this.pulseEffect > 0) {
+            this.pulseEffect -= dt * 2;
+        }
+        
         // Update ground state
         this.wasOnGround = this.onGround;
         this.onGround = false; // Will be set by collision detection
@@ -83,6 +229,14 @@ export class Player {
             this.onGround = false;
             return true; // Jump successful
         }
+        
+        // Check for double jump ability
+        if (this.forms[this.currentForm].specialAbility === 'doubleJump' && 
+            !this.onGround && this.dy > -200) {
+            this.dy = this.jumpForce * 0.8;
+            return true;
+        }
+        
         return false; // Jump failed
     }
     
@@ -98,6 +252,13 @@ export class Player {
             this.dy = 0;
             this.onGround = true;
             this.lastSafePlatform = platform;
+            
+            // Handle bounce ability
+            if (this.forms[this.currentForm].specialAbility === 'bounce') {
+                this.dy = this.jumpForce * 0.5;
+                this.onGround = false;
+            }
+            
             return true;
         }
         
@@ -146,6 +307,18 @@ export class Player {
         if (dist < this.width / 2 + collectible.size) {
             collectible.active = false;
             this.flashTime = 10;
+            
+            // Apply collectible effects
+            if (collectible.effects) {
+                collectible.effects.forEach(effect => {
+                    if (effect.type === 'formChange') {
+                        this.changeForm(effect.form);
+                    } else if (effect.type === 'powerUp') {
+                        this.addPowerUp(effect);
+                    }
+                });
+            }
+            
             return true;
         }
         
@@ -187,6 +360,7 @@ export class Player {
     createExplosion() {
         this.particles = [];
         const particleSize = this.width / 3;
+        const form = this.forms[this.currentForm];
         
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
@@ -199,7 +373,8 @@ export class Player {
                     dy: (j - 1) * 200 + (Math.random() - 0.5) * 150 - 250,
                     angle: 0,
                     angleV: (Math.random() - 0.5) * 20,
-                    life: 1
+                    life: 1,
+                    color: form.color
                 });
             }
         }
@@ -273,6 +448,11 @@ export class Player {
         this.lastSafePlatform = null;
         this.consecutiveDeaths = 0;
         this.lastDeathPlatformId = -1;
+        
+        // Reset to default form
+        this.changeForm('square');
+        this.activeEffects = [];
+        this.originalForm = 'square';
     }
     
     /**
@@ -344,6 +524,7 @@ export class Player {
      * Get player data for rendering
      */
     getRenderData() {
+        const form = this.forms[this.currentForm];
         return {
             x: this.x,
             y: this.y,
@@ -351,8 +532,37 @@ export class Player {
             height: this.height,
             angle: this.angle,
             flashTime: this.flashTime,
-            particles: this.particles
+            particles: this.particles,
+            form: this.currentForm,
+            color: form.color,
+            animationFrame: this.animationFrame,
+            pulseEffect: this.pulseEffect,
+            activeEffects: this.activeEffects
         };
+    }
+    
+    /**
+     * Get current form info
+     */
+    getCurrentForm() {
+        return {
+            name: this.currentForm,
+            ...this.forms[this.currentForm]
+        };
+    }
+    
+    /**
+     * Get all available forms
+     */
+    getAvailableForms() {
+        return Object.keys(this.forms);
+    }
+    
+    /**
+     * Add new form
+     */
+    addForm(formName, formData) {
+        this.forms[formName] = formData;
     }
     
     /**
@@ -369,5 +579,12 @@ export class Player {
     setSpeed(speed) {
         this.maxSpeed = speed;
         this.dx = speed;
+    }
+    
+    /**
+     * Trigger pulse effect
+     */
+    triggerPulse() {
+        this.pulseEffect = 1;
     }
 }
